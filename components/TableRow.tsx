@@ -286,10 +286,10 @@ export const TableRow: React.FC<TableRowProps> = ({ application, onUpdateApplica
   return (
     <>
       <tr className={`${rowBgClass} hover:bg-blue-50 transition-colors duration-150 min-h-[90px] divide-x divide-gray-200`}>
-        <td className="px-2 py-2 text-[12px] text-gray-700 align-middle pr-3">
+        <td className="px-2 py-2 text-[12px] text-gray-700 align-middle">
           <div 
             ref={dealerNameRef}
-            className="whitespace-nowrap cursor-pointer hover:text-blue-600"
+            className="cursor-pointer hover:text-blue-600"
             onClick={handleDealerNameClick}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleDealerNameClick(); }}
             role="button"
@@ -303,14 +303,14 @@ export const TableRow: React.FC<TableRowProps> = ({ application, onUpdateApplica
             {editedApp.dlrId} / {editedApp.br}
           </div>
         </td>
-        <td className="px-2 py-2 text-[12px] text-gray-700 align-middle pr-0">
+        <td className="px-2 py-2 text-[12px] text-gray-700 align-middle">
           <div>{editedApp.shawAccnt}</div>
           <div>{editedApp.primaryName}</div>
         </td>
-        <td className="px-3 py-2 text-[12px] text-gray-700 text-right align-middle whitespace-nowrap">{editedApp.fund}</td>
-        <td className="px-2 py-2 text-[12px] text-gray-700 text-right align-middle whitespace-nowrap pr-3">{editedApp.bh}</td>
+        <td className="px-2 py-2 text-[12px] text-gray-700 text-right align-middle whitespace-nowrap">{editedApp.fund}</td>
+        <td className="px-2 py-2 text-[12px] text-gray-700 text-right align-middle whitespace-nowrap">{editedApp.bh}</td>
         
-        <td className="px-2 py-2 text-[12px] align-middle whitespace-nowrap pr-3">
+        <td className="px-2 py-2 text-[12px] align-middle">
           <CustomDropdown
             options={BB_TYPE_OPTIONS}
             value={editedApp.bbType}
@@ -322,7 +322,7 @@ export const TableRow: React.FC<TableRowProps> = ({ application, onUpdateApplica
           />
         </td>
 
-        <td className="px-2 py-2 text-[12px] align-middle whitespace-nowrap pr-3">
+        <td className="px-2 py-2 text-[12px] align-middle">
           <CustomDropdown
             options={BB_STATUS_OPTIONS}
             value={editedApp.bbStatus}
@@ -334,7 +334,7 @@ export const TableRow: React.FC<TableRowProps> = ({ application, onUpdateApplica
           />
         </td>
         
-        <td className={`px-2 py-2 text-[12px] align-middle whitespace-nowrap pr-3 min-w-[100px]`}>
+        <td className={`px-2 py-2 text-[12px] align-middle whitespace-nowrap min-w-[100px]`}>
             <div className="relative">
                 <input
                 type="text"
@@ -346,7 +346,7 @@ export const TableRow: React.FC<TableRowProps> = ({ application, onUpdateApplica
                 <CalendarIcon className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
             </div>
         </td>
-        <td className={`px-2 py-2 text-[12px] align-middle whitespace-nowrap pr-3 min-w-[100px]`}>
+        <td className={`px-2 py-2 text-[12px] align-middle whitespace-nowrap min-w-[100px]`}>
             <div className="relative">
                 <input
                 type="text"
@@ -359,7 +359,7 @@ export const TableRow: React.FC<TableRowProps> = ({ application, onUpdateApplica
             </div>
         </td>
         
-        <td className="px-2 py-2 text-[12px] text-gray-700 text-right align-middle whitespace-nowrap pr-3">
+        <td className="px-2 py-2 text-[12px] text-gray-700 text-right align-middle whitespace-nowrap">
           <div 
               className={`w-full text-right cursor-pointer bg-white active:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-600 rounded-md px-2 py-2 text-[12px] ${
                 isBbAmtDirty ? 'ring-2 ring-green-500 border-green-500' : 'border border-gray-300'
@@ -394,29 +394,29 @@ export const TableRow: React.FC<TableRowProps> = ({ application, onUpdateApplica
           )}
         </td>
         
-        <td className="px-2 py-2 text-[12px] text-gray-700 text-right align-middle whitespace-nowrap pr-3">{editedApp.dpd}</td>
+        <td className="px-2 py-2 text-[12px] text-gray-700 text-right align-middle whitespace-nowrap">{editedApp.dpd}</td>
         
-        <td className="px-2 py-2 text-[12px] text-gray-700 align-middle pr-3"> 
+        <td className="px-2 py-2 text-[12px] text-gray-700 align-middle"> 
           <div>{editedApp.registrationStatus}</div>
           {editedApp.registrationIssueDate && (
             <div className="text-[11px] text-gray-500">Issued: {formatDateToMMDDYY(editedApp.registrationIssueDate)}</div>
           )}
         </td>
-        <td className="px-2 py-2 text-[12px] text-gray-700 align-middle whitespace-nowrap pr-3">
+        <td className="px-2 py-2 text-[12px] text-gray-700 align-middle">
           <div>{editedApp.titleStatus}</div>
           {editedApp.titleStatus === TitleStatusValue.RECEIVED && editedApp.titleReceivedDate && (
             <div className="text-[11px] text-gray-500">{formatDateToMMDDYY(editedApp.titleReceivedDate)}</div>
           )}
         </td>
-        <td className="px-2 py-2 text-[12px] text-gray-700 align-middle whitespace-nowrap pr-3">
+        <td className="px-2 py-2 text-[12px] text-gray-700 align-middle">
           {getDisplayLoanInsuranceStatus(editedApp.loanInsuranceStatus)}
         </td>
         
-        <td className="px-2 py-2 text-[12px] text-gray-700 align-middle pr-3">{editedApp.repoStatus}</td> 
-        <td className="px-2 py-2 text-[12px] text-gray-700 text-right align-middle whitespace-nowrap pr-3">{editedApp.dlt}</td>
-        <td className="px-2 py-2 text-[12px] text-gray-500 align-middle pr-3">{editedApp.currentStatusDisplay}</td>
+        <td className="px-2 py-2 text-[12px] text-gray-700 align-middle">{editedApp.repoStatus}</td> 
+        <td className="px-2 py-2 text-[12px] text-gray-700 text-right align-middle whitespace-nowrap">{editedApp.dlt}</td>
+        <td className="px-2 py-2 text-[12px] text-gray-500 align-middle">{editedApp.currentStatusDisplay}</td>
 
-        <td className="px-2 py-2 text-[12px] align-middle whitespace-nowrap pr-3 min-w-[100px]">
+        <td className="px-2 py-2 text-[12px] align-middle whitespace-nowrap min-w-[100px]">
           <div className="relative">
               <input
               type="text"
