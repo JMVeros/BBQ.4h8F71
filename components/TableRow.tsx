@@ -300,7 +300,7 @@ export const TableRow: React.FC<TableRowProps> = ({ application, onUpdateApplica
             {editedApp.dealer} <span className="text-gray-500">({editedApp.dealerIdNum})</span>
           </div>
           <div className="text-gray-600">
-            {editedApp.dlrId} / {editedApp.br} / {editedApp.rsm}
+            {editedApp.dlrId} / {editedApp.br}
           </div>
         </td>
         <td className="px-2 py-2 text-[12px] text-gray-700 align-middle pr-0">
@@ -375,11 +375,20 @@ export const TableRow: React.FC<TableRowProps> = ({ application, onUpdateApplica
         </td>
 
         <td className="px-2 py-2 text-[12px] text-gray-700 align-middle text-right whitespace-nowrap">
-          {editedApp.promiseToPayDate && editedApp.ptpAmount != null && isFutureDate(editedApp.promiseToPayDate) ? ( // editedApp.promiseToPayDate is yyyy
-            <div>
-              <div className="font-semibold">{formatCurrency(editedApp.ptpAmount)}</div>
-              <div className="text-gray-500 text-[10px]">{formatDateToMMDDYY(editedApp.promiseToPayDate)}</div>
-            </div>
+          {editedApp.promiseToPayDate && editedApp.ptpAmount != null ? (
+            isFutureDate(editedApp.promiseToPayDate) ? (
+              // Future Promise to Pay
+              <div>
+                <div className="font-semibold">{formatCurrency(editedApp.ptpAmount)}</div>
+                <div className="text-gray-500 text-[10px]">PTP {formatDateToMMDDYY(editedApp.promiseToPayDate)}</div>
+              </div>
+            ) : (
+              // Paid Payment (Today or in the past)
+              <div>
+                <div className="font-bold text-green-600">{formatCurrency(editedApp.ptpAmount)}</div>
+                <div className="text-gray-500 text-[10px]">Paid {formatDateToMMDDYY(editedApp.promiseToPayDate)}</div>
+              </div>
+            )
           ) : (
             <span className="text-gray-400">-</span>
           )}

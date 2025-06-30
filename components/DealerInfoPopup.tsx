@@ -60,6 +60,7 @@ export const DealerInfoPopup: React.FC<DealerInfoPopupProps> = ({ application, p
 
       {renderInfoRow("Name", `${application.dealer} (${application.dealerIdNum})`)}
       {renderInfoRow("Type", application.dealerType)}
+      {renderInfoRow("RSM", application.rsm)}
       {renderInfoRow("Address", 
         <>
           <div>{application.dealerAddressLine1}</div>

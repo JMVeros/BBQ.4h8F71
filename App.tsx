@@ -4,7 +4,7 @@ import { Header } from './components/Header';
 import { SearchBar } from './components/SearchBar';
 import { FilterTabsComponent } from './components/FilterTabs';
 import { DataTable } from './components/DataTable';
-import { Application, FilterTab, FilterTabKey, BBStatus } from './types';
+import { Application, FilterTab, FilterTabKey, BBStatus, BBType } from './types';
 import { INITIAL_APPLICATIONS, TAB_KEYS_ORDER, TAB_MOCK_COUNTS } from './constants';
 
 const App: React.FC = () => {
@@ -14,7 +14,8 @@ const App: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isActiveFilterOn, setIsActiveFilterOn] = useState<boolean>(true);
   const [isFollowUpFilterOn, setIsFollowUpFilterOn] = useState<boolean>(false);
-  const [selectedBbStatuses, setSelectedBbStatuses] = useState<BBStatus[]>([]); // New state for BB Status filter
+  const [selectedBbStatuses, setSelectedBbStatuses] = useState<BBStatus[]>([]);
+  const [selectedBbTypes, setSelectedBbTypes] = useState<BBType[]>([]); // New state for BB Type filter
 
   const calculateTabCounts = useCallback((apps: Application[]): Record<FilterTabKey, number> => {
     const counts = { ...TAB_MOCK_COUNTS }; // Start with mock counts as fallback
@@ -55,6 +56,11 @@ const App: React.FC = () => {
       tempApps = tempApps.filter(app => selectedBbStatuses.includes(app.bbStatus));
     }
 
+    // Filter by selected BB Types
+    if (selectedBbTypes.length > 0) {
+      tempApps = tempApps.filter(app => selectedBbTypes.includes(app.bbType));
+    }
+
     // Filter by Search Term
     if (searchTerm) {
       const lowerSearchTerm = searchTerm.toLowerCase();
@@ -66,7 +72,7 @@ const App: React.FC = () => {
       );
     }
     setFilteredApplications(tempApps);
-  }, [applications, activeTabKey, searchTerm, isActiveFilterOn, isFollowUpFilterOn, selectedBbStatuses]); // Added selectedBbStatuses to dependencies
+  }, [applications, activeTabKey, searchTerm, isActiveFilterOn, isFollowUpFilterOn, selectedBbStatuses, selectedBbTypes]); // Added selectedBbTypes
 
   useEffect(() => {
     filterAndSearchApplications();
@@ -117,6 +123,8 @@ const App: React.FC = () => {
             onUpdateApplication={handleUpdateApplication}
             selectedBbStatuses={selectedBbStatuses} 
             onBbStatusFilterChange={setSelectedBbStatuses} 
+            selectedBbTypes={selectedBbTypes}
+            onBbTypeFilterChange={setSelectedBbTypes}
           />
         </div>
       </main>

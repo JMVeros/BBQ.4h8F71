@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { CalendarIcon } from './icons/CalendarIcon';
 import { XMarkIcon } from './icons/XMarkIcon';
 import { CustomDropdown } from './CustomDropdown';
@@ -133,7 +133,6 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({
   const [note, setNote] = useState('');
   const [amountPaid, setAmountPaid] = useState('');
   const [paymentDate, setPaymentDate] = useState(''); // mm/dd/yy
-  const [balance, setBalance] = useState<string>('');
   const [markAsFinal, setMarkAsFinal] = useState<boolean>(false);
 
   const [noteHistory, setNoteHistory] = useState(INITIAL_NOTE_HISTORY);
@@ -141,6 +140,9 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({
   
   const [activeExpandableSection, setActiveExpandableSection] = useState<ActiveExpandableSection>('none');
 
+  const totalPaid = useMemo(() => {
+    return paymentHistory.reduce((sum, p) => sum + p.amount, 0);
+  }, [paymentHistory]);
 
   useEffect(() => {
     if (isOpen) {
@@ -156,64 +158,58 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({
       setActiveExpandableSection('none');
 
       const currentBbAmt = typeof bbAmt === 'number' ? bbAmt : 0;
-      setBalance(formatNumberWithCommas(currentBbAmt));
+      
+      const sortedPayments = INITIAL_PAYMENT_HISTORY_MOCK.slice().sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-      const initialPayments = INITIAL_PAYMENT_HISTORY_MOCK.map((p, index) => {
-        let remainingBalance = currentBbAmt;
-        INITIAL_PAYMENT_HISTORY_MOCK.slice(0, index).forEach(ip => remainingBalance -= ip.amount);
-        remainingBalance -= p.amount; 
+      let runningBalance = currentBbAmt;
+      const initialPaymentsWithBalance = sortedPayments.map(p => {
+        runningBalance -= p.amount;
         return {
-            id: p.id || `p-initial-${index}`,
-            date: p.date, // Store as yyyy
-            amount: p.amount,
-            balance: Math.max(0, remainingBalance),
-            isFinal: p.isFinal
+          id: p.id,
+          date: p.date, // Stored as yyyy
+          amount: p.amount,
+          balance: Math.max(0, runningBalance),
+          isFinal: p.isFinal
         };
-       }).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      setPaymentHistory(initialPayments);
+      }).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort descending for display
+
+      setPaymentHistory(initialPaymentsWithBalance);
       setNoteHistory(INITIAL_NOTE_HISTORY);
     }
   }, [isOpen, currentFollowUpDate, bbAmt, currentPtpDate, currentPtpAmount]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const currentBbAmt = typeof bbAmt === 'number' ? bbAmt : 0;
-    
-    const totalPaidFromHistory = paymentHistory.reduce((sum, p) => sum + p.amount, 0);
-    const parsedAmountPaidField = parseFloat(parseFormattedNumber(amountPaid)); 
-    
-    let effectiveBalance = currentBbAmt - totalPaidFromHistory;
-    if (!isNaN(parsedAmountPaidField) && amountPaid.trim() !== '') {
-         effectiveBalance -= parsedAmountPaidField;
-    }
-    
-    setBalance(formatNumberWithCommas(Math.max(0, effectiveBalance)));
-
-  }, [amountPaid, bbAmt, paymentHistory, isOpen]);
-
-
-  const handleBalanceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setBalance(e.target.value);
-  };
-
-  const handleBalanceBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const rawValue = parseFormattedNumber(e.target.value);
-    setBalance(formatNumberWithCommas(rawValue));
-  };
 
   const handleRecordPayment = () => {
     const paid = parseFloat(parseFormattedNumber(amountPaid));
-    const newBalanceForEntry = parseFloat(parseFormattedNumber(balance));
 
-    if (!isNaN(paid) && paid > 0 && paymentDate.trim() !== '' && !isNaN(newBalanceForEntry)) {
-      const newPaymentEntry: PaymentHistoryEntry = {
+    if (!isNaN(paid) && paid > 0 && paymentDate.trim() !== '') {
+      const currentBbAmt = typeof bbAmt === 'number' ? bbAmt : 0;
+
+      // Create a new temporary list of all payments including the new one
+      const newPayment = {
         id: `p-${Date.now()}`,
-        date: parseMMDDYYToMMDDYYYY(paymentDate), // Store as yyyy
+        date: parseMMDDYYToMMDDYYYY(paymentDate),
         amount: paid,
-        balance: newBalanceForEntry,
         isFinal: markAsFinal,
+        balance: 0, // temp balance
       };
-      setPaymentHistory(prev => [newPaymentEntry, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+
+      const allPayments = [...paymentHistory, newPayment]
+        .map(p => ({...p})) // create shallow copies to avoid mutation issues
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
+      // Recalculate all balances chronologically
+      let runningBalance = currentBbAmt;
+      const updatedPaymentsWithBalances = allPayments.map(p => {
+        runningBalance -= p.amount;
+        p.balance = Math.max(0, runningBalance);
+        return p;
+      });
+
+      // Sort descending for final display and update state
+      setPaymentHistory(updatedPaymentsWithBalances.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      
+      // Clear inputs
       setAmountPaid('');
       setPaymentDate('');
       setMarkAsFinal(false); 
@@ -463,7 +459,7 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({
                 <div 
                   className="p-3 border border-gray-200 rounded-md bg-gray-50"
                 >
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 ">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
                     <div>
                         <label htmlFor="amountPaidModal" className="block text-sm font-medium text-gray-700 mb-1">Amount Paid</label>
                         <div className="relative">
@@ -495,22 +491,6 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({
                             <CalendarIcon className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                         </div>
                     </div>
-                    <div>
-                        <label htmlFor="balanceModal" className="block text-sm font-medium text-gray-700 mb-1">Balance</label>
-                        <div className="relative">
-                            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 text-sm">$</span>
-                            <input
-                            type="text"
-                            id="balanceModal"
-                            value={balance}
-                            onChange={handleBalanceChange}
-                            onBlur={handleBalanceBlur}
-                            placeholder="0.00"
-                            className="w-full p-2 pl-7 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm bg-white text-right"
-                            aria-label="Balance"
-                            />
-                        </div>
-                    </div>
                     </div>
                     <div className="mt-3 flex items-center">
                         <input
@@ -537,30 +517,41 @@ export const AddNoteModal: React.FC<AddNoteModalProps> = ({
 
               <div>
                 <h3 className="text-md font-semibold text-gray-700 mb-2">Payment History</h3>
-                 <div className="border border-gray-200 rounded-md bg-white max-h-40 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
-                    {paymentHistory.length > 0 ? (
-                        <>
-                             <div className="flex justify-between text-xs font-semibold text-gray-500 p-2 border-b sticky top-0 bg-white z-10">
-                                <span className="w-1/4 text-left">Type</span>
-                                <span className="w-1/4 text-left">Date</span>
-                                <span className="w-1/4 text-right pr-2">Amount</span>
-                                <span className="w-1/4 text-right pr-2">Balance</span>
-                            </div>
-                            <ul className="divide-y divide-gray-100 pr-1">
-                                {paymentHistory.map(entry => (
-                                <li key={entry.id} className="text-sm text-gray-600 flex justify-between p-2 hover:bg-gray-50">
-                                    <span className="w-1/4 text-left">{entry.isFinal ? "Paid" : "Payment"}</span>
-                                    <span className="w-1/4 text-left">{formatDateToMMDDYY(entry.date)}</span>
-                                    <span className="w-1/4 text-right pr-2">
-                                        {`$${entry.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                    </span>
-                                    <span className="w-1/4 text-right pr-2">${entry.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                </li>
-                                ))}
-                            </ul>
-                        </>
-                    ) : (
-                        <p className="text-sm text-gray-500 p-2">No payment history.</p>
+                <div className="border border-gray-200 rounded-md bg-white">
+                    <div className="max-h-40 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+                        {paymentHistory.length > 0 ? (
+                            <>
+                                <div className="flex justify-between text-xs font-semibold text-gray-500 p-2 border-b sticky top-0 bg-white z-10">
+                                    <span className="w-1/4 text-left">Type</span>
+                                    <span className="w-1/4 text-left">Date</span>
+                                    <span className="w-1/4 text-right pr-2">Amount</span>
+                                    <span className="w-1/4 text-right pr-2">Balance</span>
+                                </div>
+                                <ul className="divide-y divide-gray-100 pr-1">
+                                    {paymentHistory.map(entry => (
+                                    <li key={entry.id} className="text-sm text-gray-600 flex justify-between p-2 hover:bg-gray-50">
+                                        <span className="w-1/4 text-left">{entry.isFinal ? "Paid" : "Payment"}</span>
+                                        <span className="w-1/4 text-left">{formatDateToMMDDYY(entry.date)}</span>
+                                        <span className="w-1/4 text-right pr-2">
+                                            {`$${entry.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                        </span>
+                                        <span className="w-1/4 text-right pr-2">${entry.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    </li>
+                                    ))}
+                                </ul>
+                            </>
+                        ) : (
+                            <p className="text-sm text-gray-500 p-2">No payment history.</p>
+                        )}
+                    </div>
+                    {paymentHistory.length > 0 && (
+                        <div className="flex justify-between text-sm font-semibold p-2 border-t border-gray-200">
+                            <span className="w-1/2 text-left text-gray-800">Total Paid</span>
+                            <span className="w-1/4 text-right pr-2 text-gray-800">
+                                {`$${totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                            </span>
+                            <span className="w-1/4"></span> {/* Empty span for alignment */}
+                        </div>
                     )}
                 </div>
               </div>

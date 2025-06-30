@@ -427,6 +427,11 @@ export const TAB_MOCK_COUNTS: Record<FilterTabKey, number> = {
 export const BB_TYPE_OPTIONS = Object.values(BBType);
 export const BB_STATUS_OPTIONS = Object.values(BBStatus);
 
+// Filtered list of BBType options for the multi-select dropdown, excluding "Choose Type"
+export const BB_TYPE_FILTER_OPTIONS = Object.values(BBType).filter(
+  type => type !== BBType.CHOOSE_TYPE
+);
+
 // Filtered list of BBStatus options for the multi-select dropdown, excluding "Choose Status"
 export const BB_STATUS_FILTER_OPTIONS = Object.values(BBStatus).filter(
   status => status !== BBStatus.CHOOSE_STATUS
