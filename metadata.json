@@ -1,0 +1,6 @@
+{
+  "name": "BBQ - BuyBackQ Dashboard",
+  "description": "A web-based dashboard used by Veros Credit to manage dealer loan applications that require a BuyBack. Users can filter, search, and update application statuses.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
