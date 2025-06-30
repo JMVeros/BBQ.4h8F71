@@ -73,7 +73,7 @@ export const DataTable: React.FC<DataTableProps> = ({
 
   return (
     <>
-      <div> {/* Removed overflow-x-auto from this div */}
+      <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 bg-white overflow-hidden">
           <thead style={{ backgroundColor: '#F2F2F2' }}>
             <tr className="divide-x divide-gray-200"> {/* Added divide-x for vertical lines */}
